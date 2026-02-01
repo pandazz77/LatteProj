@@ -5,8 +5,8 @@
 #include <QPushButton>
 #include <QFileDialog>
 
-#include "MapGraphicsView.h"
-#include "GeoJsonProvider.h"
+#include <Latte/Graphics/View/MapGraphicsView.h>
+#include <Latte/Providers/GeoJsonProvider.h>
 
 #include "ProjComboBox.hpp"
 #include "ProjProjection.h"
@@ -28,8 +28,6 @@ std::function<ProjProjection*()> EPSGfactory(QString name){
 void RegisterEPSG(ProjComboBox *combo, QString epsg){
     combo->fabric().regProjection("EPSG:"+epsg,EPSGfactory(epsg));
 }
-
-#include <GeometryConvertor.h>
 
 
 int main(int argc, char *argv[]){
@@ -71,12 +69,6 @@ int main(int argc, char *argv[]){
         onGeoJsonOpen(map,filename);
     }
 
-    // ProjProjection proj = ProjProjection::fromEPSG("3857");
-    // auto projcted = proj.project({10,10});
-    // auto bounds = proj.bounds();
-    // auto pr_bounds = GeometryConvertor::bounds(bounds,&proj);
-
-   
     window->show();
     return app.exec(); 
 }

@@ -1,7 +1,7 @@
 #include "ProjProjection.h"
 
 
-#include "proj/util.hpp" // for nn_dynamic_pointer_cast
+#include <proj/util.hpp> // for nn_dynamic_pointer_cast
 #include <cmath>   // for HUGE_VAL
 
 using namespace NS_PROJ::crs;

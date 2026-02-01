@@ -1,10 +1,10 @@
 #pragma once
 
-#include "IProjection.hpp"
-#include "SimpleProjection.h"
-#include "Mercator.h"
-#include "SphericalMercator.h"
-#include "MapGraphicsView.h"
+#include <Latte/Projection/IProjection.hpp>
+#include <Latte/Projection/SimpleProjection.h>
+#include <Latte/Projection/Mercator.h>
+#include <Latte/Projection/SphericalMercator.h>
+#include <Latte/Graphics/View/MapGraphicsView.h>
 
 #include "ProjProjection.h"
 #include <QComboBox>

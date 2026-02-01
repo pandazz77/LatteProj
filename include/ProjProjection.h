@@ -1,9 +1,9 @@
 #pragma once
 
-#include "IProjection.hpp"
-#include "proj/coordinateoperation.hpp"
-#include "proj/crs.hpp"
-#include "proj/io.hpp"
+#include <Latte/Projection/IProjection.hpp>
+#include <proj/coordinateoperation.hpp>
+#include <proj/crs.hpp>
+#include <proj/io.hpp>
 
 class ProjProjection: public IProjection{
     public:
