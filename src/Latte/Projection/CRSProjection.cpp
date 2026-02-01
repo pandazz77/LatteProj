@@ -38,8 +38,8 @@ CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bound
     // ==========================================
 }
 
-CRSProjection CRSProjection::fromEPSG(QString code){
-    CRSNNPtr target = authFactoryEPSG->createCoordinateReferenceSystem(code.toStdString());
+CRSProjection CRSProjection::fromEPSG(int code){
+    CRSNNPtr target = authFactoryEPSG->createCoordinateReferenceSystem(std::to_string(code));
     return CRSProjection(target);
 }
 

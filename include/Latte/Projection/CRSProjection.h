@@ -9,7 +9,7 @@ class CRSProjection: public IProjection{
     public:
         CRSProjection(osgeo::proj::crs::CRSNNPtr targetCRS);
 
-        static CRSProjection fromEPSG(QString code);
+        static CRSProjection fromEPSG(int epsgCode);
 
         QPointF project(const LatLng &latlng) const override;
         LatLng unproject(const QPointF &point) const override;

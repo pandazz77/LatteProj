@@ -20,14 +20,14 @@ void onGeoJsonOpen(MapGraphicsView *view, QString fileName){
     group->addTo(view);
 }
 
-std::function<CRSProjection*()> EPSGfactory(QString name){
-    return [name](){
-        return new CRSProjection(std::move(CRSProjection::fromEPSG(name)));
+std::function<CRSProjection*()> EPSGfactory(int code){
+    return [code](){
+        return new CRSProjection(std::move(CRSProjection::fromEPSG(code)));
     };
 }
 
-void RegisterEPSG(ProjComboBox *combo, QString epsg){
-    combo->fabric().regProjection("EPSG:"+epsg,EPSGfactory(epsg));
+void RegisterEPSG(ProjComboBox *combo, QString name, int code){
+    combo->fabric().regProjection(name,EPSGfactory(code));
 }
 
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
     mainLayout->addLayout(rightLayout);
 
     ProjComboBox *projCombo = new ProjComboBox(map);
-    RegisterEPSG(projCombo,"3857");
+    RegisterEPSG(projCombo,"EPSG:3857",3857);
     projCombo->update();
     rightLayout->addWidget(projCombo);
 
