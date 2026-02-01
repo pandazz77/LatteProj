@@ -15,6 +15,8 @@ class CRSProjection: public IProjection{
         LatLng unproject(const QPointF &point) const override;
         Bounds bounds() const override;
 
+        QString name() const;
+
     private:
         PJ_COORD transform(double ord1, double ord2, bool forward) const;
         
@@ -24,6 +26,7 @@ class CRSProjection: public IProjection{
         osgeo::proj::operation::CoordinateOperationPtr _backwardOP;
         Bounds _bounds;
 
+        bool easting;
 
         static osgeo::proj::io::DatabaseContextNNPtr dbContext;
         static osgeo::proj::io::AuthorityFactoryNNPtr authFactory;

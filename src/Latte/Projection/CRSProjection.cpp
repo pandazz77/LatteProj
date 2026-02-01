@@ -1,10 +1,13 @@
 #include "Latte/Projection/CRSProjection.h"
 
+#include <QDebug>
 
+#include <proj/coordinatesystem.hpp>
 #include <proj/util.hpp> // for nn_dynamic_pointer_cast
 #include <cmath>   // for HUGE_VAL
 
 using namespace NS_PROJ::crs;
+using namespace NS_PROJ::cs;
 using namespace NS_PROJ::io;
 using namespace NS_PROJ::operation;
 using namespace NS_PROJ::util;
@@ -21,7 +24,18 @@ CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bound
     // assert(!_operations.empty());
     
     _forwardOP = CoordinateOperationFactory::create()->createOperation(sourceCRS,_targetCRS);
-    _backwardOP = CoordinateOperationFactory::create()->createOperation(_targetCRS, sourceCRS);
+    _backwardOP = CoordinateOperationFactory::create()->createOperation(_targetCRS, sourceCRS);\
+
+    // extract axis directions ================
+    auto crsSP = _targetCRS.as_nullable();
+    auto singleSP = std::dynamic_pointer_cast<const SingleCRS>(crsSP);
+    if (!singleSP)
+        throw std::runtime_error("Not a SingleCRS");
+    auto cs = singleSP->coordinateSystem();
+    auto axisList = cs->axisList();
+    const AxisDirection &dir0 = axisList[0]->direction();
+    easting = dir0.toString()=="east"; // TODO: not a string equality check
+    // ========================================
 
     // extract bbox ============================
     PJ_CONTEXT *ctx = proj_context_create();
@@ -38,6 +52,10 @@ CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bound
     // ==========================================
 }
 
+QString CRSProjection::name() const {
+    return QString::fromStdString(_targetCRS->nameStr());
+}
+
 CRSProjection CRSProjection::fromEPSG(int code){
     CRSNNPtr target = authFactoryEPSG->createCoordinateReferenceSystem(std::to_string(code));
     return CRSProjection(target);
@@ -45,8 +63,8 @@ CRSProjection CRSProjection::fromEPSG(int code){
 
 PJ_COORD CRSProjection::transform(double ord1, double ord2, bool forward) const {
     PJ_COORD coord{{
-        ord1,
-        ord2,
+        easting ? ord1 : ord2,
+        easting ? ord2 : ord1,
         0.0, // z ordinate. unused
         HUGE_VAL // time ordinate. unused
     }};
