@@ -5,11 +5,11 @@
 #include <proj/crs.hpp>
 #include <proj/io.hpp>
 
-class ProjProjection: public IProjection{
+class CRSProjection: public IProjection{
     public:
-        ProjProjection(osgeo::proj::crs::CRSNNPtr targetCRS);
+        CRSProjection(osgeo::proj::crs::CRSNNPtr targetCRS);
 
-        static ProjProjection fromEPSG(QString code);
+        static CRSProjection fromEPSG(QString code);
 
         QPointF project(const LatLng &latlng) const override;
         LatLng unproject(const QPointF &point) const override;

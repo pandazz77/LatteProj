@@ -8,8 +8,9 @@
 #include <Latte/Graphics/View/MapGraphicsView.h>
 #include <Latte/Providers/GeoJsonProvider.h>
 
+#include "Latte/Projection/CRSProjection.h"
+
 #include "ProjComboBox.hpp"
-#include "ProjProjection.h"
 
 GeoJsonProvider provider;
 
@@ -19,9 +20,9 @@ void onGeoJsonOpen(MapGraphicsView *view, QString fileName){
     group->addTo(view);
 }
 
-std::function<ProjProjection*()> EPSGfactory(QString name){
+std::function<CRSProjection*()> EPSGfactory(QString name){
     return [name](){
-        return new ProjProjection(std::move(ProjProjection::fromEPSG(name)));
+        return new CRSProjection(std::move(CRSProjection::fromEPSG(name)));
     };
 }
 

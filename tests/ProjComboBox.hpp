@@ -6,7 +6,6 @@
 #include <Latte/Projection/SphericalMercator.h>
 #include <Latte/Graphics/View/MapGraphicsView.h>
 
-#include "ProjProjection.h"
 #include <QComboBox>
 
 class ProjectionsFabric{

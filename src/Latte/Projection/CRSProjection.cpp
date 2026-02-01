@@ -1,4 +1,4 @@
-#include "ProjProjection.h"
+#include "Latte/Projection/CRSProjection.h"
 
 
 #include <proj/util.hpp> // for nn_dynamic_pointer_cast
@@ -9,13 +9,13 @@ using namespace NS_PROJ::io;
 using namespace NS_PROJ::operation;
 using namespace NS_PROJ::util;
 
-DatabaseContextNNPtr ProjProjection::dbContext = DatabaseContext::create();
-AuthorityFactoryNNPtr ProjProjection::authFactory = AuthorityFactory::create(dbContext,std::string());
-CoordinateOperationContextNNPtr ProjProjection::coord_op_ctxt = CoordinateOperationContext::create(authFactory,nullptr,0.0);
-AuthorityFactoryNNPtr ProjProjection::authFactoryEPSG = AuthorityFactory::create(dbContext,"EPSG");
-CRSNNPtr ProjProjection::sourceCRS = authFactoryEPSG->createCoordinateReferenceSystem("4326");
+DatabaseContextNNPtr CRSProjection::dbContext = DatabaseContext::create();
+AuthorityFactoryNNPtr CRSProjection::authFactory = AuthorityFactory::create(dbContext,std::string());
+CoordinateOperationContextNNPtr CRSProjection::coord_op_ctxt = CoordinateOperationContext::create(authFactory,nullptr,0.0);
+AuthorityFactoryNNPtr CRSProjection::authFactoryEPSG = AuthorityFactory::create(dbContext,"EPSG");
+CRSNNPtr CRSProjection::sourceCRS = authFactoryEPSG->createCoordinateReferenceSystem("4326");
 
-ProjProjection::ProjProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bounds({},{}){
+CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bounds({},{}){
     // _operations = CoordinateOperationFactory::create()->createOperations(sourceCRS,_targetCRS,coord_op_ctxt);
     // assert(!_operations.empty());
     _forwardOP = CoordinateOperationFactory::create()->createOperation(sourceCRS,_targetCRS);
@@ -34,12 +34,12 @@ ProjProjection::ProjProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bou
     _bounds.southWest = {Slat,Wlng};
 }
 
-ProjProjection ProjProjection::fromEPSG(QString code){
+CRSProjection CRSProjection::fromEPSG(QString code){
     CRSNNPtr target = authFactoryEPSG->createCoordinateReferenceSystem(code.toStdString());
-    return ProjProjection(target);
+    return CRSProjection(target);
 }
 
-PJ_COORD ProjProjection::PJ_COORD_2D(double v1, double v2){
+PJ_COORD CRSProjection::PJ_COORD_2D(double v1, double v2){
     return PJ_COORD{{
         v1,
         v2,
@@ -48,7 +48,7 @@ PJ_COORD ProjProjection::PJ_COORD_2D(double v1, double v2){
     }};
 }
 
-PJ_COORD ProjProjection::transform(PJ_COORD coord, bool forward) const {
+PJ_COORD CRSProjection::transform(PJ_COORD coord, bool forward) const {
     PJ_CONTEXT *ctx = proj_context_create();
     CoordinateOperationPtr operation = forward ? _forwardOP : _backwardOP;
     auto transformer = operation->coordinateTransformer(ctx);
@@ -59,7 +59,7 @@ PJ_COORD ProjProjection::transform(PJ_COORD coord, bool forward) const {
     return coord;
 }
 
-QPointF ProjProjection::project(const LatLng &latlng) const{
+QPointF CRSProjection::project(const LatLng &latlng) const{
     PJ_COORD projected = transform(
         PJ_COORD_2D(latlng.lat(),latlng.lng()),
         true
@@ -70,7 +70,7 @@ QPointF ProjProjection::project(const LatLng &latlng) const{
     };
 }
 
-LatLng ProjProjection::unproject(const QPointF &point) const{
+LatLng CRSProjection::unproject(const QPointF &point) const{
     PJ_COORD unprojected = transform(
         PJ_COORD_2D(point.x(),point.y()),
         false
@@ -81,6 +81,6 @@ LatLng ProjProjection::unproject(const QPointF &point) const{
     );
 }
 
-Bounds ProjProjection::bounds() const{
+Bounds CRSProjection::bounds() const{
     return _bounds;
 }
