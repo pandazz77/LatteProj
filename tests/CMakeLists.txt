@@ -1,0 +1,2 @@
+add_executable(GeoJsonViewer main.cpp simple_dataset.hpp ProjComboBox.hpp)
+target_link_libraries(GeoJsonViewer LatteProj)
