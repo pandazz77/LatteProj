@@ -16,11 +16,14 @@ AuthorityFactoryNNPtr CRSProjection::authFactoryEPSG = AuthorityFactory::create(
 CRSNNPtr CRSProjection::sourceCRS = authFactoryEPSG->createCoordinateReferenceSystem("4326");
 
 CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bounds({},{}){
+    // we can use entire coordinate operations list by this:
     // _operations = CoordinateOperationFactory::create()->createOperations(sourceCRS,_targetCRS,coord_op_ctxt);
     // assert(!_operations.empty());
+    
     _forwardOP = CoordinateOperationFactory::create()->createOperation(sourceCRS,_targetCRS);
     _backwardOP = CoordinateOperationFactory::create()->createOperation(_targetCRS, sourceCRS);
 
+    // extract bbox ============================
     PJ_CONTEXT *ctx = proj_context_create();
     double Wlng, Slat, Elng, Nlat;
 
@@ -32,6 +35,7 @@ CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bound
 
     _bounds.northEast = {Nlat,Elng};
     _bounds.southWest = {Slat,Wlng};
+    // ==========================================
 }
 
 CRSProjection CRSProjection::fromEPSG(QString code){
@@ -39,16 +43,13 @@ CRSProjection CRSProjection::fromEPSG(QString code){
     return CRSProjection(target);
 }
 
-PJ_COORD CRSProjection::PJ_COORD_2D(double v1, double v2){
-    return PJ_COORD{{
-        v1,
-        v2,
+PJ_COORD CRSProjection::transform(double ord1, double ord2, bool forward) const {
+    PJ_COORD coord{{
+        ord1,
+        ord2,
         0.0, // z ordinate. unused
         HUGE_VAL // time ordinate. unused
     }};
-}
-
-PJ_COORD CRSProjection::transform(PJ_COORD coord, bool forward) const {
     PJ_CONTEXT *ctx = proj_context_create();
     CoordinateOperationPtr operation = forward ? _forwardOP : _backwardOP;
     auto transformer = operation->coordinateTransformer(ctx);
@@ -61,7 +62,7 @@ PJ_COORD CRSProjection::transform(PJ_COORD coord, bool forward) const {
 
 QPointF CRSProjection::project(const LatLng &latlng) const{
     PJ_COORD projected = transform(
-        PJ_COORD_2D(latlng.lat(),latlng.lng()),
+        latlng.lat(), latlng.lng(),
         true
     );
     return QPointF{
@@ -72,7 +73,7 @@ QPointF CRSProjection::project(const LatLng &latlng) const{
 
 LatLng CRSProjection::unproject(const QPointF &point) const{
     PJ_COORD unprojected = transform(
-        PJ_COORD_2D(point.x(),point.y()),
+        point.x(), point.y(),
         false
     );
     return LatLng(

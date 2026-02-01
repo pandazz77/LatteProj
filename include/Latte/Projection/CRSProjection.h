@@ -16,8 +16,7 @@ class CRSProjection: public IProjection{
         Bounds bounds() const override;
 
     private:
-        static PJ_COORD PJ_COORD_2D(double v1, double v2);
-        PJ_COORD transform(PJ_COORD coord, bool forward) const;
+        PJ_COORD transform(double ord1, double ord2, bool forward) const;
         
     private:
         osgeo::proj::crs::CRSNNPtr _targetCRS;
