@@ -2,6 +2,8 @@
 
 #include <QDebug>
 
+#define SOURCE_CRS "EPSG:4326"
+
 PJ_COORD latlng2pj(const LatLng &latlng){
     return proj_coord(latlng.lng(),latlng.lat(),0,0);
 }
@@ -70,12 +72,11 @@ QString CRSProjection::name() const {
     return proj_get_name(targetCRS());
 }
 
-CRSProjection CRSProjection::fromEPSG(int code){
+CRSProjection CRSProjection::fromString(QString string){
     PJ_CONTEXT *ctx = proj_context_create();
-    std::string target_auth = "EPSG:"+std::to_string(code);
 
     // create transformation
-    PJ *P = proj_create_crs_to_crs(ctx, "EPSG:4326", target_auth.c_str(), nullptr);
+    PJ *P = proj_create_crs_to_crs(ctx, SOURCE_CRS, string.toStdString().c_str(), nullptr);
     if (!P) {
         throw std::runtime_error("Cannot create transformation");
     }
@@ -87,6 +88,13 @@ CRSProjection CRSProjection::fromEPSG(int code){
         P = P_norm;
     }
     return CRSProjection(P,ctx);
+}
+
+CRSProjection CRSProjection::fromEPSG(int code){
+    return fromString(
+        QString("EPSG:%1")
+            .arg(code)
+    );
 }
 
 QPointF CRSProjection::project(const LatLng &latlng) const{
