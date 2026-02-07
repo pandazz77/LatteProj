@@ -1,15 +1,12 @@
 #pragma once
 
 #include <Latte/Projection/IProjection.hpp>
-#include <proj/coordinateoperation.hpp>
-#include <proj/crs.hpp>
-#include <proj/io.hpp>
+#include <proj.h>
 
 class CRSProjection: public IProjection{
     public:
-        CRSProjection(osgeo::proj::crs::CRSNNPtr targetCRS);
-
         static CRSProjection fromEPSG(int epsgCode);
+        ~CRSProjection();
 
         QPointF project(const LatLng &latlng) const override;
         LatLng unproject(const QPointF &point) const override;
@@ -17,22 +14,14 @@ class CRSProjection: public IProjection{
 
         QString name() const;
 
-    private:
-        PJ_COORD transform(double ord1, double ord2, bool forward) const;
+    protected:
+        CRSProjection(PJ *transformation, PJ_CONTEXT *ctx);
+
+        PJ *targetCRS() const;
         
     private:
-        osgeo::proj::crs::CRSNNPtr _targetCRS;
-        osgeo::proj::operation::CoordinateOperationPtr _forwardOP;
-        osgeo::proj::operation::CoordinateOperationPtr _backwardOP;
+        PJ_CONTEXT *ctx = nullptr;
+        PJ *transformation = nullptr;
         Bounds _bounds;
-
-        bool easting;
-
-        static osgeo::proj::io::DatabaseContextNNPtr dbContext;
-        static osgeo::proj::io::AuthorityFactoryNNPtr authFactory;
-        static osgeo::proj::operation::CoordinateOperationContextNNPtr coord_op_ctxt;
-        static osgeo::proj::io::AuthorityFactoryNNPtr authFactoryEPSG;
-        static osgeo::proj::crs::CRSNNPtr sourceCRS;
-
         
 };

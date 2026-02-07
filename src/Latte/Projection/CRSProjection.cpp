@@ -2,102 +2,74 @@
 
 #include <QDebug>
 
-#include <proj/coordinatesystem.hpp>
-#include <proj/util.hpp> // for nn_dynamic_pointer_cast
-#include <cmath>   // for HUGE_VAL
+PJ_COORD latlng2pj(const LatLng &latlng){
+    return proj_coord(latlng.lng(),latlng.lat(),0,0);
+}
 
-using namespace NS_PROJ::crs;
-using namespace NS_PROJ::cs;
-using namespace NS_PROJ::io;
-using namespace NS_PROJ::operation;
-using namespace NS_PROJ::util;
+LatLng pj2latlng(const PJ_COORD &pj){
+    return LatLng(pj.v[1],pj.v[0]);
+}
 
-DatabaseContextNNPtr CRSProjection::dbContext = DatabaseContext::create();
-AuthorityFactoryNNPtr CRSProjection::authFactory = AuthorityFactory::create(dbContext,std::string());
-CoordinateOperationContextNNPtr CRSProjection::coord_op_ctxt = CoordinateOperationContext::create(authFactory,nullptr,0.0);
-AuthorityFactoryNNPtr CRSProjection::authFactoryEPSG = AuthorityFactory::create(dbContext,"EPSG");
-CRSNNPtr CRSProjection::sourceCRS = authFactoryEPSG->createCoordinateReferenceSystem("4326");
+PJ_COORD qpoint2pj(const QPointF &point){
+    return proj_coord(point.x(),point.y(),0,0);
+}
 
-CRSProjection::CRSProjection(CRSNNPtr targetCRS) : _targetCRS(targetCRS), _bounds({},{}){
-    // we can use entire coordinate operations list by this:
-    // _operations = CoordinateOperationFactory::create()->createOperations(sourceCRS,_targetCRS,coord_op_ctxt);
-    // assert(!_operations.empty());
-    
-    _forwardOP = CoordinateOperationFactory::create()->createOperation(sourceCRS,_targetCRS);
-    _backwardOP = CoordinateOperationFactory::create()->createOperation(_targetCRS, sourceCRS);\
+QPointF pj2qpoint(const PJ_COORD &pj){
+    return QPointF{pj.v[0], pj.v[1]};
+}
 
-    // extract axis directions ================
-    auto crsSP = _targetCRS.as_nullable();
-    auto singleSP = std::dynamic_pointer_cast<const SingleCRS>(crsSP);
-    if (!singleSP)
-        throw std::runtime_error("Not a SingleCRS");
-    auto cs = singleSP->coordinateSystem();
-    auto axisList = cs->axisList();
-    const AxisDirection &dir0 = axisList[0]->direction();
-    easting = dir0.toString()=="east"; // TODO: not a string equality check
-    // ========================================
-
+CRSProjection::CRSProjection(PJ *transformation, PJ_CONTEXT *ctx) : transformation(transformation), ctx(ctx), _bounds({},{}){
     // extract bbox ============================
-    PJ_CONTEXT *ctx = proj_context_create();
+    PJ *target = targetCRS();
     double Wlng, Slat, Elng, Nlat;
 
-    std::string epsg = "EPSG:"+std::to_string(_targetCRS->getEPSGCode());
-    PJ *crs = proj_create(ctx,epsg.c_str());
-    proj_get_area_of_use(ctx,crs,&Wlng,&Slat,&Elng,&Nlat,nullptr);
-    proj_context_destroy(ctx);
-    proj_destroy(crs);
+    proj_get_area_of_use(ctx,target,&Wlng,&Slat,&Elng,&Nlat,nullptr);
 
     _bounds.northEast = {Nlat,Elng};
     _bounds.southWest = {Slat,Wlng};
     // ==========================================
 }
 
+CRSProjection::~CRSProjection(){
+    // proj_context_destroy(ctx);
+    // proj_destroy(transformation);
+}
+
+PJ *CRSProjection::targetCRS() const {
+    return proj_get_target_crs(ctx,transformation);
+}
+
 QString CRSProjection::name() const {
-    return QString::fromStdString(_targetCRS->nameStr());
+    return proj_get_name(targetCRS());
 }
 
 CRSProjection CRSProjection::fromEPSG(int code){
-    CRSNNPtr target = authFactoryEPSG->createCoordinateReferenceSystem(std::to_string(code));
-    return CRSProjection(target);
-}
-
-PJ_COORD CRSProjection::transform(double ord1, double ord2, bool forward) const {
-    PJ_COORD coord{{
-        easting ? ord1 : ord2,
-        easting ? ord2 : ord1,
-        0.0, // z ordinate. unused
-        HUGE_VAL // time ordinate. unused
-    }};
     PJ_CONTEXT *ctx = proj_context_create();
-    CoordinateOperationPtr operation = forward ? _forwardOP : _backwardOP;
-    auto transformer = operation->coordinateTransformer(ctx);
+    std::string target_auth = "EPSG:"+std::to_string(code);
 
-    coord = transformer->transform(coord);
-    proj_context_destroy(ctx);
+    // create transformation
+    PJ *P = proj_create_crs_to_crs(ctx, "EPSG:4326", target_auth.c_str(), nullptr);
+    if (!P) {
+        throw std::runtime_error("Cannot create transformation");
+    }
 
-    return coord;
+    // Normalize for consistent axis order (lat, lon input)
+    PJ* P_norm = proj_normalize_for_visualization(ctx, P);
+    if (P_norm) {
+        proj_destroy(P);
+        P = P_norm;
+    }
+    return CRSProjection(P,ctx);
 }
 
 QPointF CRSProjection::project(const LatLng &latlng) const{
-    PJ_COORD projected = transform(
-        latlng.lat(), latlng.lng(),
-        true
-    );
-    return QPointF{
-        projected.v[0],
-        projected.v[1]
-    };
+    PJ_COORD projected = proj_trans(transformation, PJ_FWD, latlng2pj(latlng));
+    return pj2qpoint(projected);
 }
 
 LatLng CRSProjection::unproject(const QPointF &point) const{
-    PJ_COORD unprojected = transform(
-        point.x(), point.y(),
-        false
-    );
-    return LatLng(
-        unprojected.v[0],
-        unprojected.v[1]
-    );
+    PJ_COORD unprojected = proj_trans(transformation, PJ_INV, qpoint2pj(point));
+    return pj2latlng(unprojected);
 }
 
 Bounds CRSProjection::bounds() const{

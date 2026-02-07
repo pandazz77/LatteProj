@@ -53,6 +53,8 @@ int main(int argc, char *argv[]){
     ProjComboBox *projCombo = new ProjComboBox(map);
     RegisterEPSG(projCombo,"EPSG:3857",3857);
     RegisterEPSG(projCombo,"EPSG:9475",9475);
+    RegisterEPSG(projCombo, "EPSG:27700", 27700);
+    RegisterEPSG(projCombo,"EPSG:4890",4890);
     projCombo->update();
     rightLayout->addWidget(projCombo);
 
