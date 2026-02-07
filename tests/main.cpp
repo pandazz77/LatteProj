@@ -26,8 +26,10 @@ std::function<CRSProjection*()> EPSGfactory(int code){
     };
 }
 
-void RegisterEPSG(ProjComboBox *combo, QString name, int code){
-    combo->fabric().regProjection(name,EPSGfactory(code));
+void RegisterEPSG(ProjComboBox *combo, int code){
+    CRSProjection temp = CRSProjection::fromEPSG(code);
+    QString epsg_str = QString("EPSG:%1").arg(code);
+    combo->fabric().regProjection(epsg_str + " / " + temp.name(),EPSGfactory(code));
 }
 
 
@@ -42,7 +44,7 @@ int main(int argc, char *argv[]){
 
     QWidget *window = new QWidget;
     QHBoxLayout *mainLayout = new QHBoxLayout(window);
-    window->resize(800,600);
+    window->resize(1200,600);
     window->setLayout(mainLayout);
     QVBoxLayout *rightLayout = new QVBoxLayout(nullptr);
 
@@ -51,10 +53,10 @@ int main(int argc, char *argv[]){
     mainLayout->addLayout(rightLayout);
 
     ProjComboBox *projCombo = new ProjComboBox(map);
-    RegisterEPSG(projCombo,"EPSG:3857",3857);
-    RegisterEPSG(projCombo,"EPSG:9475",9475);
-    RegisterEPSG(projCombo, "EPSG:27700", 27700);
-    RegisterEPSG(projCombo,"EPSG:4890",4890);
+    RegisterEPSG(projCombo,3857);
+    RegisterEPSG(projCombo,9474);
+    RegisterEPSG(projCombo,27700);
+    // RegisterEPSG(projCombo,4890); // UNSUPPORTED
     projCombo->update();
     rightLayout->addWidget(projCombo);
 

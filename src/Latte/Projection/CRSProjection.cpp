@@ -18,9 +18,23 @@ QPointF pj2qpoint(const PJ_COORD &pj){
     return QPointF{pj.v[0], pj.v[1]};
 }
 
+const QVector<PJ_TYPE> UNSUPPORTED_PJ_TYPES{
+    PJ_TYPE_GEOCENTRIC_CRS,
+    PJ_TYPE_GEOGRAPHIC_3D_CRS,
+    PJ_TYPE_VERTICAL_CRS,
+    PJ_TYPE_COMPOUND_CRS
+};
+
 CRSProjection::CRSProjection(PJ *transformation, PJ_CONTEXT *ctx) : transformation(transformation), ctx(ctx){
-    // extract bbox ============================
     PJ *target = targetCRS();
+
+    PJ_TYPE type = proj_get_type(target);
+    qDebug() << type;
+    if(UNSUPPORTED_PJ_TYPES.contains(type)){
+        qWarning() << name() << "You are trying to use unsupported PJ_TYPE" << type;
+    }
+
+    // extract bbox ============================
     double Wlng, Slat, Elng, Nlat;
 
     proj_get_area_of_use(ctx,target,&Wlng,&Slat,&Elng,&Nlat,nullptr);
