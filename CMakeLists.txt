@@ -21,7 +21,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_link_libraries(${PROJECT_NAME} LatteLong::LatteLong PROJ::proj Qt6::Core Qt6::Widgets)
 
 
-option(BUILD_TESTS "Build tests" ON)
-if(BUILD_TESTS)
-    add_subdirectory(./tests)
+option(BUILD_EXAMPLES "Build tests" ON)
+if(BUILD_EXAMPLES)
+    add_subdirectory(./examples)
 endif()
