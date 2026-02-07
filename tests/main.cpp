@@ -56,6 +56,7 @@ int main(int argc, char *argv[]){
     RegisterEPSG(projCombo,3857);
     RegisterEPSG(projCombo,9474);
     RegisterEPSG(projCombo,27700);
+    RegisterEPSG(projCombo,2175);
     // RegisterEPSG(projCombo,4890); // UNSUPPORTED
     projCombo->update();
     rightLayout->addWidget(projCombo);

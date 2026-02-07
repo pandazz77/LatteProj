@@ -29,7 +29,6 @@ CRSProjection::CRSProjection(PJ *transformation, PJ_CONTEXT *ctx) : transformati
     PJ *target = targetCRS();
 
     PJ_TYPE type = proj_get_type(target);
-    qDebug() << type;
     if(UNSUPPORTED_PJ_TYPES.contains(type)){
         qWarning() << name() << "You are trying to use unsupported PJ_TYPE" << type;
     }
