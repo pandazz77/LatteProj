@@ -5,6 +5,9 @@
 
 class CRSProjection: public IProjection{
     public:
+        CRSProjection(CRSProjection &src);
+        CRSProjection(CRSProjection &&src);
+
         static CRSProjection fromEPSG(int epsgCode);
         ~CRSProjection();
 
@@ -22,6 +25,6 @@ class CRSProjection: public IProjection{
     private:
         PJ_CONTEXT *ctx = nullptr;
         PJ *transformation = nullptr;
-        Bounds _bounds;
+        Bounds _bounds = {{},{}};
         
 };

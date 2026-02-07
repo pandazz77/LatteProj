@@ -18,7 +18,7 @@ QPointF pj2qpoint(const PJ_COORD &pj){
     return QPointF{pj.v[0], pj.v[1]};
 }
 
-CRSProjection::CRSProjection(PJ *transformation, PJ_CONTEXT *ctx) : transformation(transformation), ctx(ctx), _bounds({},{}){
+CRSProjection::CRSProjection(PJ *transformation, PJ_CONTEXT *ctx) : transformation(transformation), ctx(ctx){
     // extract bbox ============================
     PJ *target = targetCRS();
     double Wlng, Slat, Elng, Nlat;
@@ -30,9 +30,23 @@ CRSProjection::CRSProjection(PJ *transformation, PJ_CONTEXT *ctx) : transformati
     // ==========================================
 }
 
+CRSProjection::CRSProjection(CRSProjection &src){
+    this->ctx = proj_context_clone(src.ctx);
+    this->transformation = proj_clone(ctx,src.transformation);
+    this->_bounds = src._bounds;
+}
+
+CRSProjection::CRSProjection(CRSProjection &&src){
+    this->ctx = src.ctx;
+    src.ctx = nullptr;
+    this->transformation = src.transformation;
+    src.transformation = nullptr;
+    this->_bounds = src._bounds;
+}
+
 CRSProjection::~CRSProjection(){
-    // proj_context_destroy(ctx);
-    // proj_destroy(transformation);
+    proj_context_destroy(ctx);
+    proj_destroy(transformation);
 }
 
 PJ *CRSProjection::targetCRS() const {
