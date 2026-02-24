@@ -16,7 +16,14 @@ set(HRDS
     include/Latte/Projection/CRSProjection.h
 )
 
-add_library(${PROJECT_NAME} SHARED ${SRCS} ${HDRS})
+option(LATTEPROJ_SHARED "Build LatteProj as shared library" ON)
+if(LATTEPROJ_SHARED)
+    set(LIBRARY_TYPE SHARED)
+else()
+    set(LIBRARY_TYPE STATIC)
+endif()
+
+add_library(${PROJECT_NAME} ${LIBRARY_TYPE} ${SRCS} ${HDRS})
 add_library(LatteLong::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}
