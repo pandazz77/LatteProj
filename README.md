@@ -29,5 +29,5 @@ target_link_libraries(YourProject LatteLong::LatteLong LatteLong::LatteProj)
 OR you can pass installation and use library simply by adding this directory with cmake:
 
 ```cmake
-add_subdirectory(./LatteLong)
+add_subdirectory(./LatteProj)
 ```
