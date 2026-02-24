@@ -9,7 +9,7 @@ A [proj](https://github.com/OSGeo/PROJ) extension for [LatteLong](https://github
 [Check out Example](examples/main.cpp)
 
 ## Dependencies
-- LatteLong > 0.2.0
+- LatteLong >= 0.2.0
 - Proj (at the moment tested only on 9.7.0)
 
 ## Installation
