@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(LatteProj VERSION 0.0.1)
+project(LatteProj VERSION 0.1.0)
 
 find_package(Qt6 REQUIRED COMPONENTS 
     Core
