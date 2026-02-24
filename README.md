@@ -21,8 +21,10 @@ sudo cmake --build . -j 4 --config Release --target install
 ```
 now you will be able to access library with CMake:
 
+```cmake
 find_package(LatteLong REQUIRED COMPONENTS LatteProj)
 target_link_libraries(YourProject LatteLong::LatteLong LatteLong::LatteProj)
+```
 
 OR you can pass installation and use library simply by adding this directory with cmake:
 
