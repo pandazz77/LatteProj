@@ -20,14 +20,17 @@ void onGeoJsonOpen(MapGraphicsView *view, QString fileName){
     group->addTo(view);
 }
 
+// EPSG CRS factory for ProjComboBox
 std::function<CRSProjection*()> EPSGfactory(int code){
     return [code](){
         return new CRSProjection(std::move(CRSProjection::fromEPSG(code)));
     };
 }
 
+
+// Register CRS to ProjComboBox by EPSG code
 void RegisterEPSG(ProjComboBox *combo, int code){
-    CRSProjection temp = CRSProjection::fromEPSG(code);
+    CRSProjection temp = CRSProjection::fromEPSG(code); // temporary crs for access to name of it
     QString epsg_str = QString("EPSG:%1").arg(code);
     combo->fabric().regProjection(epsg_str + " / " + temp.name(),EPSGfactory(code));
 }
